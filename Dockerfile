@@ -13,6 +13,9 @@ RUN apt-get update && \
     net-tools \
     socat
 
+RUN mkdir -p /root/.config/htop/
+COPY htoprc /root/.config/htop/htoprc
+
 # Clean up
 RUN apt-get clean && \
     rm -rf /var/lib/apt/lists/*
