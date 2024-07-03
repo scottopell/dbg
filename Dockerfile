@@ -9,7 +9,6 @@ RUN apt-get update && \
     jq \
     iproute2 \
     iputils-ping \
-    python3 \
     net-tools \
     socat
 
