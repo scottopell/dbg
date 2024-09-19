@@ -1,4 +1,4 @@
-FROM ubuntu:latest
+FROM ubuntu:devel AS base
 
 # Moving from separate apt installs to a combined
 # Before: 160MB
@@ -39,7 +39,12 @@ COPY htoprc /root/.config/htop/htoprc
 # Verdict: Failed.
 
 RUN apt-get clean && \
-    rm -rf /var/lib/apt/lists/* \
+    rm -rf /var/lib/apt/lists/*
 
+FROM scratch
 
+# Before: 165 MB
+# After: 118 MB
+COPY --from=base / /
 
+CMD ["/bin/bash"]
