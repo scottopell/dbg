@@ -1,15 +1,17 @@
+FROM rust AS utils
+
+ENV CARGO_NET_GIT_FETCH_WITH_CLI true
+
+# Stuck in build hell here, repo has a submodule configured with ssh
+# either delete it in my fork
+# or
+# build binaries via github actions and download those binaries in here
+RUN git config --global url."https://github".insteadOf git://github && \
+    mkdir /t && \
+    cargo install --root=/t --git=https://github.com/scottopell/promtool.git --bin promtool
+
 FROM ubuntu:devel AS base
 
-# Moving from separate apt installs to a combined
-# Before: 160MB
-# After: 132MB
-# Verdict: Passed.
-
-# Install packages
-# Adding --no-install-recommends
-# Before: 132MB
-# AFter: 130MB
-# Verdict: Passed.
 RUN apt-get update && \
     apt-get install -y curl \
     htop \
@@ -22,29 +24,13 @@ RUN apt-get update && \
 RUN mkdir -p /root/.config/htop/
 COPY htoprc /root/.config/htop/htoprc
 
-# This is an optimization to reduce image size, I only need english
-# Before: 139mb
-# AFter: 160mb
-# Verdict: Failed.
-#RUN apt-get update && apt-get install -y locales \
-#    && locale-gen en_US.UTF-8 \
-#    && locale-gen en_US \
-#    && update-locale LANG=en_US.UTF-8 LANGUAGE=en_US \
-#    && rm -rf /usr/share/locale/* \
-#    && rm -rf /var/cache/debconf/*old
-
-# Removing '/var/cache/apt/archives/*'
-# Before: 132MB
-# After: 132MB
-# Verdict: Failed.
 
 RUN apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
 FROM scratch
 
-# Before: 165 MB
-# After: 118 MB
 COPY --from=base / /
+COPY --from=utils /t/ /usr/local/
 
 CMD ["/bin/bash"]
